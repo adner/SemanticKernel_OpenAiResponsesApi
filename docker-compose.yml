@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  gpt-oss-transformers:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Set to "gpu" to use CUDA base + CUDA wheels for PyTorch
+        FLAVOR: "gpu"          # "cpu" or "gpu"
+        # Torch wheel index (CPU or CUDA 12.4). Override if needed.
+        TORCH_INDEX_URL: "https://download.pytorch.org/whl/cu124"
+    image: gpt-oss-transformers:latest
+    container_name: gpt-oss-transformers
+    ports:
+      - "8000:8000"
+    environment:
+      # Speed up HF downloads & define caches
+      HF_HOME: /data/hf
+      HF_HUB_ENABLE_HF_TRANSFER: "1"
+      # Optional: set a default model to avoid specifying it on each request.
+      # The server will still accept "model" from the request body.
+      # DEFAULT_MODEL: "openai/gpt-oss-20b"
+    volumes:
+      - hf_cache:/data/hf
+    # Give the container access to GPUs when running on an NVIDIA host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+    # Helps large models avoid CUDA OOM on attention kernels
+    shm_size: "2g"
+    # You can tweak workers if you need concurrency
+    command: [ "transformers", "serve", "--host", "0.0.0.0" ]
+
+volumes:
+  hf_cache:
