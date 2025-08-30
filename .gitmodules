@@ -1,3 +1,6 @@
 [submodule "semantic-kernel"]
 	path = semantic-kernel
 	url = https://github.com/adner/semantic-kernel.git
+[submodule "openai-dotnet"]
+	path = openai-dotnet
+	url = https://github.com/adner/openai-dotnet
